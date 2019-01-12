@@ -2,6 +2,7 @@ const rp = require("request-promise");
 const $ = require("cheerio");
 const baseUrl = "https://www.kimovil.com";
 const startUrl = "https://www.kimovil.com/en/compare-smartphones/page.1?xhr=1";
+const CSV = require('./arrayToCSV.js');
 
 // Handlers
 const About = require("./data-sheet/about.js");
@@ -11,6 +12,9 @@ const Connectivity = require("./data-sheet/Connectivity.js");
 const Design = require("./data-sheet/Design.js");
 const Performance = require("./data-sheet/Performance.js");
 const Software = require("./data-sheet/Software.js");
+
+// Main handler for now:
+const Dumb = require('./data-sheet/dumb');
 
 // Variables -
 let htmlPageAccumulator;
@@ -53,23 +57,24 @@ class Scrapper {
     try {
       let htmlContent = await rp(url);
 
-      const about = About.Builder(htmlContent);
-      console.log(about);
+      // const about = About.Builder(htmlContent);
       // Battery.Builder(htmlContent);
       // Camera.Builder(htmlContent);
       // Connectivity.Builder(htmlContent);
       // Design.Builder(htmlContent);
       // Performance.Builder(htmlContent);
       // Software.Builder(htmlContent);
-
-      // exportToCSV({ about });
+      const dumb = Dumb.Builder(htmlContent);
+      // console.log(dumb);
+      this.exportToCSV(dumb);
     } catch (e) {
       console.log("pollItems Error: ", e);
     }
   }
 
-  exportToCSV(objCSV) {
-
+  exportToCSV(csvData) {
+    // new CSV(csvData);
+    new CSV(csvData);
   }
 }
 
