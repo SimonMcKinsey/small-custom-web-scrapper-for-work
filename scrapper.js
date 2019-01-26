@@ -57,16 +57,16 @@ class Scrapper {
     try {
       let htmlContent = await rp(url);
 
-      // const about = About.Builder(htmlContent);
+      const about = About.Builder(htmlContent);
       // Battery.Builder(htmlContent);
       // Camera.Builder(htmlContent);
       // Connectivity.Builder(htmlContent);
       // Design.Builder(htmlContent);
       // Performance.Builder(htmlContent);
       // Software.Builder(htmlContent);
-      const dumb = Dumb.Builder(htmlContent);
+      // const dumb = Dumb.Builder(htmlContent);
       // console.log(dumb);
-      this.exportToCSV(dumb);
+      // this.exportToCSV(dumb);
     } catch (e) {
       console.log("pollItems Error: ", e);
     }
@@ -74,7 +74,6 @@ class Scrapper {
 
   exportToCSV(csvData) {
     // new CSV(csvData);
-    new CSV(csvData);
   }
 }
 
