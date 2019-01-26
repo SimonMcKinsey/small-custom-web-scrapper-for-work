@@ -1,5 +1,6 @@
 const request = require('request-promise');
 const cheerio = require('cheerio');
+const ObjectsToCsv = require('objects-to-csv');
 
 const url = "https://www.kimovil.com/en/where-to-buy-oneplus-6t-8gb-128gb";
 
@@ -90,6 +91,9 @@ async function scrapeValues() {
                 const ddArr = rightColumn.children().find("dd");
                 dd.push(description);
                 $(ddArr).each((index, element) => {
+                    const title = dt[index];
+                    const content = $(element).text().replace(/[\n\r]/g, "").trim();
+                    scrapeResults.push({ title, content });
                     dd.push($(element).text().replace(/[\n\r]/g, "").trim())
                 });
             });
@@ -101,5 +105,23 @@ async function scrapeValues() {
     }
 }
 
+
+async function createCsvFile(data) {
+    try {
+        let csv = new ObjectsToCsv(data);
+        
+        // Save to file:
+        await csv.toDisk('./test.csv');
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function scrapeTest() {
+    await scrapeTitles();
+    await scrapeValues();
+    await createCsvFile(scrapeResults);
+}
+
 // scrapeSections();
-scrapeValues();
+scrapeTest();
