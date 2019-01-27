@@ -6,6 +6,7 @@ const url = "https://www.kimovil.com/en/where-to-buy-oneplus-6t-8gb-128gb";
 
 const scrapeResults = [];
 let dt = []; // holds all title of features
+let dd = [];// holds all content of features
 
 // only happens ones
 async function scrapeTitles() {
@@ -24,6 +25,7 @@ async function scrapeTitles() {
 
         // all children of the block, aka sections
         let sections = $(deviceProfile).children();
+        dt.push('Description (About - About)');
 
         // Getting data of each section
         $(sections).each((index, element) => {
@@ -34,23 +36,20 @@ async function scrapeTitles() {
             
             // rows of table of that section
             const tableRows = elm.find('.table').children();
-
             // inner loop to iterate rows
             $(tableRows).each((index, element) => {
                 const rightColumn = $(element).find(".right").first();
-
+                const leftColumn = $(element).find(".left").first(); // sub-title
+                
                 // loop dt to extract all titles and format them according to section name
                 const dtArr = rightColumn.find("dt");
-                dt.push('Description (About)');
+                dtArr.remove('.br');
                 $(dtArr).each((index, element) => {
-                    dt.push($(element).text().replace(/[\n\r]/g, "") + ' (' + sectionName + ')')
+                    dt.push($(element).text().replace(/[\n\r]/g, "") + ' (' + sectionName + ' - ' + leftColumn.text().replace(/[\n\r]/g, "") + ')')
                 });
             });
-
-
         });
         
-        dt = new Set(dt);
     } catch (err) {
         console.log(err);
     }
@@ -58,7 +57,6 @@ async function scrapeTitles() {
 
 async function scrapeValues() {
     try {
-        let dd = [];
         const htmlResult = await request.get(url);
         const $ = await cheerio.load(htmlResult);
 
@@ -70,16 +68,18 @@ async function scrapeValues() {
         $('#cards-wrapp_deviceprofile-top').remove();
         $('.user-opinion-questions').remove();
         
-
+        
         // all children of the block, aka sections
         let sections = $(deviceProfile).children();
+
+        // only element which is outside a table
+        const description = sections.find('.mini-info').text();
+        dd.push(description);
 
         // Getting data of each section
         $(sections).each((index, element) => {
             const elm = $(element);
 
-            // only element which is outside a table
-            const description = elm.find('.mini-info').text();
 
             const tableRows = elm.find('.table').children();
 
@@ -89,16 +89,14 @@ async function scrapeValues() {
 
                 // extra inner loops to iterate dl which should be equal in size
                 const ddArr = rightColumn.children().find("dd");
-                dd.push(description);
                 $(ddArr).each((index, element) => {
-                    const title = dt[index];
-                    const content = $(element).text().replace(/[\n\r]/g, "").trim();
-                    scrapeResults.push({ title, content });
+                    // const title = dt[index];
+                    // const content = $(element).text().replace(/[\n\r]/g, "").trim();
+                    // scrapeResults.push({ title, content });
                     dd.push($(element).text().replace(/[\n\r]/g, "").trim())
                 });
             });
         });
-        dd = new Set(dd);
         return dd;
     } catch (err) {
         console.log(err);
@@ -111,7 +109,8 @@ async function createCsvFile(data) {
         let csv = new ObjectsToCsv(data);
         
         // Save to file:
-        await csv.toDisk('./test.csv');
+        await csv.toDisk('./test2.csv');
+
     } catch(err) {
         console.log(err);
     }
@@ -120,8 +119,26 @@ async function createCsvFile(data) {
 async function scrapeTest() {
     await scrapeTitles();
     await scrapeValues();
+    const data = bindHeadersWithContent();
+    scrapeResults.push(data);
     await createCsvFile(scrapeResults);
+}
+
+function bindHeadersWithContent() {
+    const binder = {};
+    for(let i = 0; i < dt.length; i++) {
+        const itemTitle = dt[i];
+        const itemContent = dd[i];
+        binder[itemTitle] = itemContent;
+    }
+    console.log(binder);
+    return binder;
 }
 
 // scrapeSections();
 scrapeTest();
+
+
+
+// scrapeResult = { title, url, datePosted, hood };
+// scrapeResults.push(scrapeResult);
