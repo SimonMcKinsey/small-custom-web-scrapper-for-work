@@ -3,7 +3,7 @@ const cheerio = require("cheerio");
 const ObjectsToCsv = require("objects-to-csv");
 
 const innerFirstUrl =
-  "https://www.kimovil.com/en/where-to-buy-xiaomi-mi8-8gb";
+  "https://www.kimovil.com/en/where-to-buy-oneplus-6t-8gb-128gb";
 
 const baseUrl = "https://www.kimovil.com";
 const startUrl = "https://www.kimovil.com/en/compare-smartphones/page.1?xhr=1";
@@ -38,8 +38,10 @@ async function scrapeTitles() {
     // Getting data of each section
     $(sections).each((index, element) => {
       const elm = $(element);
-      let sectionName = elm.attr("class").split(" ")[1];
-      sectionName = sectionName[0].toUpperCase() + sectionName.slice(1);
+      let sectionName;
+      if (elm.attr("class").split(" ").length > 0) {
+        sectionName = elm.attr("class").split(" ")[1];
+      }
 
       // rows of table of that section
       const tableRows = elm.find(".table").children();
@@ -56,16 +58,44 @@ async function scrapeTitles() {
         const dtArr = rightColumn.find("dt");
         dtArr.remove(".br");
         $(dtArr).each((index, element) => {
-          dt.push(
-            $(element)
-              .text()
-              .replace(/[\n\r]/g, "") +
+          const unwanted = $(element).text();
+          if (unwanted !== 'Aliases'
+            && unwanted !== 'Successors'
+            && unwanted !== 'Predecessor'
+            && unwanted !== 'Barometer'
+            && unwanted !== 'RGB'
+            && unwanted !== 'DLNA'
+            && unwanted !== 'Extra'
+            && unwanted !== ''
+            && unwanted !== ' '
+            && unwanted !== 'NFC'
+            && unwanted !== 'Front'
+            && unwanted !== 'ISO'
+            && unwanted !== 'Sensor'
+            && unwanted !== 'EXTRA'
+            && unwanted !== 'Host'
+            && unwanted !== 'host'
+            && unwanted !== 'Rear Extra'
+            && unwanted !== 'Sound'
+            && unwanted !== 'Flash'
+            && unwanted !== 'Pixel size'
+            && unwanted !== 'Resistance certificate'
+            && unwanted !== 'Gravity'
+            && unwanted !== 'Magnetometer'
+            && unwanted !== 'Pedometer'
+            && unwanted !== 'Infrared'
+            && unwanted !== 'MHL') {
+            dt.push(
+              $(element)
+                .text()
+                .replace(/[\n\r]/g, "") +
               " (" +
               sectionName +
               " - " +
               leftColumn.text().replace(/[\n\r]/g, "") +
               ")"
-          );
+            );
+          }
         });
       });
     });
@@ -112,15 +142,44 @@ async function scrapeValues(_url) {
         // extra inner loops to iterate dl which should be equal in size
         const ddArr = rightColumn.children().find("dd");
         $(ddArr).each((index, element) => {
+          const unwanted = $(element).prev().text();
+          if (unwanted !== 'Aliases'
+            && unwanted !== 'Successors'
+            && unwanted !== 'Predecessor'
+            && unwanted !== 'Barometer'
+            && unwanted !== 'RGB'
+            && unwanted !== 'DLNA'
+            && unwanted !== 'Extra'
+            && unwanted !== ''
+            && unwanted !== ' '
+            && unwanted !== 'NFC'
+            && unwanted !== 'Front'
+            && unwanted !== 'ISO'
+            && unwanted !== 'Sensor'
+            && unwanted !== 'EXTRA'
+            && unwanted !== 'Host'
+            && unwanted !== 'host'
+            && unwanted !== 'Rear Extra'
+            && unwanted !== 'Sound'
+            && unwanted !== 'Flash'
+            && unwanted !== 'Pixel size'
+            && unwanted !== 'Resistance certificate'
+            && unwanted !== 'Gravity'
+            && unwanted !== 'Magnetometer'
+            && unwanted !== 'Pedometer'
+            && unwanted !== 'Infrared'
+            && unwanted !== 'MHL'
+            ) {
+            dd.push(
+              $(element)
+                .text()
+                .replace(/[\n\r]/g, "")
+                .trim()
+            );
+          }
           // const title = dt[index];
           // const content = $(element).text().replace(/[\n\r]/g, "").trim();
           // scrapeResults.push({ title, content });
-          dd.push(
-            $(element)
-              .text()
-              .replace(/[\n\r]/g, "")
-              .trim()
-          );
         });
       });
     });
@@ -179,7 +238,7 @@ async function scrapePaginationDepth(url) {
     let { next_page_url } = JSON.parse(await request(url));
     totalPagesArr.push(baseUrl + next_page_url + "?xhr=1");
     pageCounter += 1;
-    if (next_page_url && next_page_url.length > 0 && pageCounter < 1) {
+    if (next_page_url && next_page_url.length > 0 && pageCounter < 4) {
       await scrapePaginationDepth(baseUrl + next_page_url + "?xhr=1");
     }
   } catch (e) {
@@ -190,7 +249,7 @@ async function scrapePaginationDepth(url) {
 async function scrapeMainPhonesPage() {
   console.log("scrapeMainPhonesPage()");
   try {
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 4; i++) {
       const currentPageUrl = totalPagesArr[i];
       const { content } = JSON.parse(await request(currentPageUrl));
       const $ = await cheerio.load(content);
