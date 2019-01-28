@@ -3,12 +3,13 @@ const cheerio = require("cheerio");
 const ObjectsToCsv = require("objects-to-csv");
 
 const innerFirstUrl =
-  "https://www.kimovil.com/en/where-to-buy-oneplus-6t-8gb-128gb";
+  "https://www.kimovil.com/en/where-to-buy-xiaomi-mi8-8gb";
 
 const baseUrl = "https://www.kimovil.com";
 const startUrl = "https://www.kimovil.com/en/compare-smartphones/page.1?xhr=1";
 
 let pageCounter = 0;
+let finalLinksArr = [];
 
 const totalPagesArr = [];
 
@@ -17,6 +18,7 @@ let dt = []; // holds all title of features
 
 // only happens ones
 async function scrapeTitles() {
+  console.log("scrapeTitles()");
   try {
     const htmlResult = await request.get(innerFirstUrl);
     const $ = await cheerio.load(htmlResult);
@@ -73,6 +75,7 @@ async function scrapeTitles() {
 }
 
 async function scrapeValues(_url) {
+  console.log("scrapeValues(_url)");
   try {
     let dd = []; // holds all content of features
 
@@ -121,6 +124,7 @@ async function scrapeValues(_url) {
         });
       });
     });
+    console.log(dd.length, dt.length)
     return dd;
   } catch (err) {
     console.log(err);
@@ -128,40 +132,54 @@ async function scrapeValues(_url) {
 }
 
 async function createCsvFile(data) {
+  console.log("createCsvFile(data)");
   try {
     let csv = new ObjectsToCsv(data);
 
     // Save to file:
-    await csv.toDisk("./test2.csv");
+    await csv.toDisk("./test5.csv");
   } catch (err) {
     console.log(err);
   }
 }
 
-async function scrapeTest() {
-  await scrapeTitles();
-  await scrapeValues();
-  const data = bindHeadersWithContent();
-  scrapeResults.push(data);
-  await createCsvFile(scrapeResults);
-}
+// async function scrapeTest() {
+//   await scrapeTitles();
+//   await scrapeValues();
+//   const data = bindHeadersWithContent();
+//   scrapeResults.push(data);
+//   await createCsvFile(scrapeResults);
+// }
 
 function bindHeadersWithContent(_dd) {
+  console.log("bindHeadersWithContent()");
   const binder = {};
   for (let i = 0; i < dt.length; i++) {
     const itemTitle = dt[i];
     const itemContent = _dd[i];
     binder[itemTitle] = itemContent;
+    console.log("itemTitle: ", itemTitle);
+  }
+  return binder;
+}
+
+function insertTitles() {
+  console.log("insertTitles()");
+  const binder = {};
+  for (let i = 0; i < dt.length; i++) {
+    const itemTitle = dt[i];
+    binder[itemTitle] = itemTitle;
   }
   return binder;
 }
 
 async function scrapePaginationDepth(url) {
+  console.log("scrapePaginationDepth(url)");
   try {
     let { next_page_url } = JSON.parse(await request(url));
     totalPagesArr.push(baseUrl + next_page_url + "?xhr=1");
     pageCounter += 1;
-    if (next_page_url && next_page_url.length > 0 && pageCounter < 3) {
+    if (next_page_url && next_page_url.length > 0 && pageCounter < 1) {
       await scrapePaginationDepth(baseUrl + next_page_url + "?xhr=1");
     }
   } catch (e) {
@@ -170,9 +188,9 @@ async function scrapePaginationDepth(url) {
 }
 
 async function scrapeMainPhonesPage() {
-  let finalLinksArr = [];
+  console.log("scrapeMainPhonesPage()");
   try {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 1; i++) {
       const currentPageUrl = totalPagesArr[i];
       const { content } = JSON.parse(await request(currentPageUrl));
       const $ = await cheerio.load(content);
@@ -189,17 +207,25 @@ async function scrapeMainPhonesPage() {
 }
 
 async function scrapeValuesContent() {
-  for (let i = 0; finalLinksArr.length; i++) {
+  console.log("scrapeValuesContent()");
+  const finalScrapeData = [];
+  // const titles = bindHeadersWithContent(dt);
+  // finalScrapeData.push(titles);
+  for (let i = 0; i < finalLinksArr.length; i++) {
     const _dd = await scrapeValues(finalLinksArr[i]);
-    const data = bindHeadersWithContent(dd);
+    // const data = bindHeadersWithContent(_dd);
+    finalScrapeData.push(_dd);
   }
+  return finalScrapeData;
 }
 
 async function scraper() {
   await scrapeTitles();
+  totalPagesArr.push(startUrl);
   await scrapePaginationDepth(startUrl);
   await scrapeMainPhonesPage();
-  await scrapeValuesContent();
+  const data = await scrapeValuesContent();
+  await createCsvFile(data);
 }
 
 // scrapeSections();
