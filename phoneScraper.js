@@ -84,7 +84,17 @@ async function scrapeTitles() {
             && unwanted !== 'Magnetometer'
             && unwanted !== 'Pedometer'
             && unwanted !== 'Infrared'
-            && unwanted !== 'MHL') {
+            && unwanted !== 'MHL'
+            && unwanted !== 'Heart Rate'
+            && unwanted !== 'Iris scanner'
+            && unwanted !== 'ANT+'
+            && unwanted !== 'USB Host 3.0'
+            && unwanted !== 'VoWiFi'
+            && unwanted !== 'Sound'
+            && unwanted !== 'American measurement'
+            && unwanted !== 'Pixel size'
+            && unwanted !== 'Aperture'
+            ) {
             dt.push(
               $(element)
                 .text()
@@ -169,6 +179,15 @@ async function scrapeValues(_url) {
             && unwanted !== 'Pedometer'
             && unwanted !== 'Infrared'
             && unwanted !== 'MHL'
+            && unwanted !== 'Heart Rate'
+            && unwanted !== 'Iris scanner'
+            && unwanted !== 'ANT+'
+            && unwanted !== 'USB Host 3.0'
+            && unwanted !== 'VoWiFi'
+            && unwanted !== 'Sound'
+            && unwanted !== 'American measurement'
+            && unwanted !== 'Pixel size'
+            && unwanted !== 'Aperture'
             ) {
             dd.push(
               $(element)
@@ -273,7 +292,8 @@ async function scrapeValuesContent() {
   for (let i = 0; i < finalLinksArr.length; i++) {
     const _dd = await scrapeValues(finalLinksArr[i]);
     // const data = bindHeadersWithContent(_dd);
-    finalScrapeData.push(_dd);
+    // if(_dd.length > 72)
+        finalScrapeData.push(_dd);
   }
   return finalScrapeData;
 }
