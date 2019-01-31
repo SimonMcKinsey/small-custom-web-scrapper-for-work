@@ -1,6 +1,5 @@
 const request = require("request-promise");
 const cheerio = require("cheerio");
-const ObjectsToCsv = require("objects-to-csv");
 var _ = require('lodash');
 
 
@@ -211,26 +210,6 @@ async function scrapeValues(_url) {
   }
 }
 
-async function createCsvFile(data) {
-  console.log("createCsvFile(data)");
-  try {
-    let csv = new ObjectsToCsv(data);
-
-    // Save to file:
-    await csv.toDisk("./test5.csv");
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-// async function scrapeTest() {
-//   await scrapeTitles();
-//   await scrapeValues();
-//   const data = bindHeadersWithContent();
-//   scrapeResults.push(data);
-//   await createCsvFile(scrapeResults);
-// }
-
 function bindHeadersWithContent(_dd) {
   console.log("bindHeadersWithContent()");
   const binder = {};
@@ -251,20 +230,6 @@ function insertTitles() {
     binder[itemTitle] = itemTitle;
   }
   return binder;
-}
-
-async function scrapePaginationDepth(url) {
-  console.log("scrapePaginationDepth(url)");
-  try {
-    let { next_page_url } = JSON.parse(await request(url));
-    totalPagesArr.push(baseUrl + next_page_url + "?xhr=1");
-    pageCounter += 1;
-    if (next_page_url && next_page_url.length > 0 && pageCounter < 4) {
-      await scrapePaginationDepth(baseUrl + next_page_url + "?xhr=1");
-    }
-  } catch (e) {
-    console.log("ERROR: ", e);
-  }
 }
 
 async function scrapeMainPhonesPage() {

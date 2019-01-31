@@ -13,6 +13,7 @@
     "cheerio": "^1.0.0-rc.2",
     "convert-array-to-csv": "^1.0.4",
     "csv-writer": "^1.2.0",
+    "lodash": "^4.17.11",
     "objects-to-csv": "^1.2.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.2"
